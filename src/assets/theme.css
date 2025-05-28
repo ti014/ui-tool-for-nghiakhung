@@ -1,0 +1,37 @@
+:root {
+  /* Main colors */
+  --primary-color: #7C9CBF;
+  --primary-dark: #6B8BAF;
+  --primary-light: #8DACCF;
+  
+  /* Info colors */
+  --info-color: #A5D8FF;
+  --info-dark: #95C8EF;
+  
+  /* Danger colors */
+  --danger-color: #FFB4B4;
+  --danger-dark: #FFA4A4;
+  
+  /* Light orange color for current photo */
+  --light-orange: #FFB4A2;
+  --light-orange-dark: #FFA492;
+  
+  /* Background colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F7FA;
+  --bg-hover: #E8ECF3;
+  
+  /* Text colors */
+  --text-primary: #2D3748;
+  --text-secondary: #718096;
+  
+  /* Border colors */
+  --border-color: #E2E8F0;
+  
+  /* Shadow colors */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  
+  /* Layout dimensions */
+  --nav-height: 64px;
+  --footer-height: 48px;
+} 

@@ -1,29 +1,39 @@
 <template>
-  <div class="home-view">
-    <div class="features-grid">
-      <div
-        v-for="feature in features"
-        :key="feature.id"
-        class="feature-card"
-        @click="navigateToFeature(feature.routeName)"
-        @keypress.enter="navigateToFeature(feature.routeName)"
-        tabindex="0"
-        role="button"
-        :aria-label="`Mở ${feature.name}`"
-      >
-        <div class="card-icon-wrapper">
-          <div :class="['feature-icon', feature.iconClass]"></div>
+  <MainLayout>
+    <div class="home-view">
+      <h2 class="main-title">Các công cụ chính</h2>
+      <div class="features-grid">
+        <div
+          v-for="feature in features"
+          :key="feature.id"
+          class="feature-card"
+          @click="navigateToFeature(feature.routeName)"
+          @keypress.enter="navigateToFeature(feature.routeName)"
+          tabindex="0"
+          role="button"
+          :aria-label="`Mở ${feature.name}`"
+        >
+          <div class="card-icon-wrapper">
+            <template v-if="feature.iconImg">
+              <img :src="feature.iconImg" alt="Guest Mode Icon" class="feature-img-icon" />
+            </template>
+            <template v-else>
+              <div :class="['feature-icon', feature.iconClass]"></div>
+            </template>
+          </div>
+          <h3 class="card-title">{{ feature.name }}</h3>
+          <p class="card-description">{{ feature.description }}</p>
         </div>
-        <h3 class="card-title">{{ feature.name }}</h3>
-        <p class="card-description">{{ feature.description }}</p>
       </div>
     </div>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MainLayout from '@/components/layouts/MainLayout.vue'
+import handIcon from '@/assets/icons/hand-icon.png'
 
 const router = useRouter()
 
@@ -64,6 +74,14 @@ const features = ref([
     routeName: 'OcrView'
   },
   {
+    id: 'guestmode',
+    name: 'Guest Mode',
+    description: 'Giao diện người dùng cuối cùng',
+    iconClass: 'guest',
+    iconImg: handIcon,
+    routeName: 'GuestModeView'
+  },
+  {
     id: 'settings',
     name: 'Cài đặt',
     description: 'Cài đặt cấu hình của ứng dụng',
@@ -81,9 +99,9 @@ const navigateToFeature = (routeName) => {
 
 <style scoped>
 .home-view {
-  padding: 40px 20px;
+  padding: 20px;
   background-color: var(--bg-secondary);
-  min-height: 100vh;
+  min-height: calc(100vh - 64px - 100px); /* Subtract header and footer height */
   box-sizing: border-box;
   transition: background-color var(--transition-speed) ease;
 }
@@ -189,5 +207,12 @@ const navigateToFeature = (routeName) => {
     width: 32px;
     height: 32px;
   }
+}
+
+.feature-img-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
 }
 </style>

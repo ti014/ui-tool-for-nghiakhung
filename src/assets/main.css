@@ -124,6 +124,10 @@ body {
   background-image: url('@/assets/icons/settings-icon.png');
 }
 
+.feature-icon.guest {
+  background-image: url('@/assets/icons/guest-icon.png');
+}
+
 /* Dark theme */
 .dark {
   --primary-color: #42b983;

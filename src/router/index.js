@@ -13,16 +13,10 @@ const router = createRouter({
       name: "home",
       component: () => import("../views/HomeView.vue"),
     },
-    {
-      path: "/login",
-      name: "login",
-      component: () => import("../views/LoginView.vue"),
-    },
     // Ví dụ cho các route khác
     {
       path: "/all-features",
-      name: "AllFeaturesView", // Phải khớp với routeName trong HomeView.vue
-      // component: () => import('../views/features/AllFeaturesView.vue') // Lazy loading
+      name: "AllFeaturesView",
       component: () =>
         import(
           /* webpackChunkName: "all-features" */ "../views/features/AllFeaturesView.vue"
@@ -64,11 +58,36 @@ const router = createRouter({
           /* webpackChunkName: "settings" */ "../views/features/SettingsView.vue"
         ),
     },
+    {
+      path: "/guest-mode",
+      name: "GuestModeView",
+      component: () =>
+        import(
+          /* webpackChunkName: "guest-mode" */ "../views/features/GuestModeView.vue"
+        ),
+      children: [
+        {
+          path: "chon-xac-thuc",
+          name: "SelectAuthMethodView",
+          component: () => import("@/views/features/SelectAuthMethodView.vue"),
+        },
+      ],
+    },
+    {
+      path: "/read-cccd",
+      name: "ReadCccdFlowView",
+      component: () => import("@/views/features/ReadCccdFlowView.vue"),
+    },
+    {
+      path: "/read-passport",
+      name: "ReadPassportFlowView",
+      component: () => import("@/views/features/ReadPassportFlowView.vue"),
+    },
     // Catch all 404
     {
       path: "/:pathMatch(.*)*",
       name: "NotFound",
-      component: () => import("../views/NotFoundView.vue"),
+      component: () => import("../views/features/NotFoundView.vue"),
     },
   ],
 });

@@ -21,7 +21,11 @@ export const useTheme = () => {
     theme,
     (newTheme) => {
       localStorage.setItem(THEME_KEY, newTheme);
-      document.documentElement.classList.toggle(DARK, newTheme === DARK);
+      if (newTheme === DARK) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
     },
     { immediate: true }
   );
