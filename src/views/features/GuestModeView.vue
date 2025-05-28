@@ -1,6 +1,6 @@
 <template>
   <div class="guest-mode-container">
-    <transition name="page" mode="out-in">
+    <transition name="fade-slide" mode="out-in">
       <div v-if="showMainContent && $route.name === 'GuestModeView'" key="main-content" class="main-content">
         <SlideShow />
         <div class="start-button-container">
@@ -20,7 +20,7 @@
       </div>
     </transition>
     <router-view v-slot="{ Component }">
-      <transition name="page" mode="out-in">
+      <transition name="fade-slide" mode="out-in">
         <component :is="Component" />
       </transition>
     </router-view>
@@ -331,23 +331,21 @@ function handleStart() {
 }
 
 /* Cải thiện hiệu ứng transition */
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
   width: 100%;
 }
 
-.page-enter-from {
+.fade-slide-enter-from {
   opacity: 0;
-  transform: scale(0.95);
-  filter: blur(10px);
+  transform: translateX(20px);
 }
 
-.page-leave-to {
+.fade-slide-leave-to {
   opacity: 0;
-  transform: scale(1.05);
-  filter: blur(10px);
+  transform: translateX(-20px);
 }
 
 .main-content {

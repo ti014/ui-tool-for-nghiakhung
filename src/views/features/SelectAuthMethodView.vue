@@ -81,11 +81,14 @@ function handleSelect(key) {
     return
   }
   if (key === 'guide') {
-    alert('Hướng dẫn sử dụng: Vui lòng chọn tính năng phù hợp để xác thực hoặc xem hướng dẫn chi tiết.');
-    return;
+    router.push({ name: 'GuideView' })
+    return
+  }
+  if (key === 'qr') {
+    router.push({ name: 'ReadQrFlowView' })
+    return
   }
   alert('Bạn đã chọn: ' + features.find(f => f.key === key).title);
-  // router.push({ name: ... })
 }
 function goPrev() {
   if (swiperRef.value) {

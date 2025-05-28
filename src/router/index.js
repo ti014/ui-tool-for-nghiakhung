@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 // import CameraView from '../views/features/CameraView.vue';
 // import SettingsView from '../views/features/SettingsView.vue';
 // ...
+import ReadQrFlowView from "@/views/features/ReadQrFlowView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +72,11 @@ const router = createRouter({
           name: "SelectAuthMethodView",
           component: () => import("@/views/features/SelectAuthMethodView.vue"),
         },
+        {
+          path: "huong-dan",
+          name: "GuideView",
+          component: () => import("@/views/features/GuideView.vue"),
+        },
       ],
     },
     {
@@ -82,6 +88,11 @@ const router = createRouter({
       path: "/read-passport",
       name: "ReadPassportFlowView",
       component: () => import("@/views/features/ReadPassportFlowView.vue"),
+    },
+    {
+      path: "/qr",
+      name: "ReadQrFlowView",
+      component: ReadQrFlowView,
     },
     // Catch all 404
     {
