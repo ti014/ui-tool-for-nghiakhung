@@ -1,7 +1,7 @@
 <template>
   <MainLayout>
     <div class="home-view">
-      <h2 class="main-title">Các công cụ chính</h2>
+      <h2 class="home-title">Chọn tính năng</h2>
       <div class="features-grid">
         <div
           v-for="feature in features"
@@ -99,7 +99,7 @@ const navigateToFeature = (routeName) => {
 
 <style scoped>
 .home-view {
-  padding: 20px;
+  padding: 50px;
   background-color: var(--bg-secondary);
   min-height: calc(100vh - 64px - 100px); /* Subtract header and footer height */
   box-sizing: border-box;
@@ -113,6 +113,14 @@ const navigateToFeature = (routeName) => {
   margin-bottom: 60px;
   font-weight: 600;
   transition: color var(--transition-speed) ease;
+}
+
+.home-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .features-grid {

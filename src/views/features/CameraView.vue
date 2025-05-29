@@ -1,13 +1,13 @@
 <template>
   <MainLayout>
     <div class="camera-container">
-      <div class="camera-header">
-        <div class="header-content">
-          <div class="header-left">
-            <h2 class="camera-title">Kiểm tra Camera</h2>
-            <p class="camera-subtitle">Quản lý và kiểm tra trạng thái camera</p>
+      <div class="camera-section">
+        <div class="section-content">
+          <div class="section-left">
+            <h2 class="section-title">Kiểm tra Camera</h2>
+            <p class="section-subtitle">Quản lý và kiểm tra trạng thái camera</p>
           </div>
-          <div class="header-right">
+          <div class="section-right">
             <div class="camera-controls">
               <div class="camera-select-wrapper">
                 <select 
@@ -116,6 +116,18 @@
           <img :src="capturedImage" alt="Captured image" />
         </div>
       </div>
+
+      <!-- Error Dialog -->
+      <div v-if="showError" class="error-dialog">
+        <div class="error-content">
+          <h3>Lỗi</h3>
+          <p>{{ errorMessage }}</p>
+          <div class="error-actions">
+            <button @click="retryLastAction" class="action-button primary">Thử lại</button>
+            <button @click="closeError" class="action-button danger">Đóng</button>
+          </div>
+        </div>
+      </div>
     </div>
   </MainLayout>
 </template>
@@ -124,6 +136,7 @@
 import { ref, computed, onUnmounted, onMounted } from 'vue'
 import MainLayout from '@/components/layouts/MainLayout.vue'
 
+// Refs
 const videoElement = ref(null)
 const cameras = ref([])
 const selectedCamera = ref('')
@@ -132,50 +145,122 @@ const isLoading = ref(false)
 const capturedImage = ref(null)
 const currentResolution = ref('')
 const currentFps = ref(0)
+const showError = ref(false)
+const errorMessage = ref('')
+const lastAction = ref(null)
+
+// Canvas for image capture
+const canvas = ref(null)
+
+// Stream management
 let stream = null
 let fpsInterval = null
+let frameCount = 0
+let lastTime = 0
 
+// Computed
 const hasMultipleCameras = computed(() => cameras.value.length > 1)
 
+// Check browser compatibility
+const checkBrowserCompatibility = () => {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    throw new Error('Trình duyệt của bạn không hỗ trợ truy cập camera')
+  }
+}
+
+// Error handling
+const handleError = (error, action) => {
+  console.error('Camera error:', error)
+  errorMessage.value = error.message || 'Đã xảy ra lỗi không xác định'
+  showError.value = true
+  lastAction.value = action
+}
+
+const closeError = () => {
+  showError.value = false
+  errorMessage.value = ''
+  lastAction.value = null
+}
+
+const retryLastAction = () => {
+  if (lastAction.value) {
+    closeError()
+    lastAction.value()
+  }
+}
+
+// FPS counter
+const startFpsCounter = () => {
+  frameCount = 0
+  lastTime = performance.now()
+  fpsInterval = setInterval(() => {
+    const currentTime = performance.now()
+    const elapsed = currentTime - lastTime
+    currentFps.value = Math.round((frameCount * 1000) / elapsed)
+    frameCount = 0
+    lastTime = currentTime
+  }, 1000)
+}
+
+const stopFpsCounter = () => {
+  if (fpsInterval) {
+    clearInterval(fpsInterval)
+    fpsInterval = null
+  }
+  currentFps.value = 0
+}
+
+// Resolution tracking
+const updateResolution = () => {
+  if (videoElement.value) {
+    currentResolution.value = `${videoElement.value.videoWidth}x${videoElement.value.videoHeight}`
+  }
+}
+
+// Camera list management
 const getCameraList = async () => {
   try {
     isLoading.value = true
-    
-    // Đầu tiên yêu cầu quyền truy cập camera
-    await navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        // Dừng stream ngay sau khi có quyền truy cập
-        stream.getTracks().forEach(track => track.stop())
-      })
-      .catch(error => {
-        throw new Error('Không thể truy cập camera: ' + error.message)
-      })
+    checkBrowserCompatibility()
 
-    // Sau đó lấy danh sách thiết bị
+    // Get device list first
     const devices = await navigator.mediaDevices.enumerateDevices()
-    cameras.value = devices.filter(device => device.kind === 'videoinput')
+    const videoDevices = devices.filter(device => device.kind === 'videoinput')
     
-    if (cameras.value.length === 0) {
-      alert('Không tìm thấy camera nào trên thiết bị')
-    } else if (!selectedCamera.value) {
-      selectedCamera.value = cameras.value[0].deviceId
+    if (videoDevices.length === 0) {
+      throw new Error('Không tìm thấy camera nào trên thiết bị')
+    }
+
+    cameras.value = videoDevices
+    
+    // Request permission only if needed
+    if (!selectedCamera.value) {
+      try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true })
+        tempStream.getTracks().forEach(track => track.stop())
+        selectedCamera.value = cameras.value[0].deviceId
+      } catch (error) {
+        throw new Error('Vui lòng cấp quyền truy cập camera để tiếp tục')
+      }
     }
 
     console.log('Danh sách camera:', cameras.value)
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách camera:', error)
-    alert(error.message || 'Không thể lấy danh sách camera. Vui lòng kiểm tra quyền truy cập.')
+    handleError(error, getCameraList)
   } finally {
     isLoading.value = false
   }
 }
 
+// Camera control
 const startCamera = async () => {
   try {
-    if (stream) {
-      stopCamera()
-    }
+    checkBrowserCompatibility()
+    
+    // Stop existing stream if any
+    await stopCamera()
 
+    // Create new stream
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         deviceId: selectedCamera.value ? { exact: selectedCamera.value } : undefined,
@@ -189,161 +274,157 @@ const startCamera = async () => {
       isStreaming.value = true
       startFpsCounter()
       updateResolution()
+      
+      // Update resolution on video metadata loaded
+      videoElement.value.onloadedmetadata = () => {
+        updateResolution()
+      }
     }
   } catch (error) {
-    console.error('Lỗi khi khởi động camera:', error)
-    alert('Không thể khởi động camera. Vui lòng thử lại.')
+    handleError(error, startCamera)
   }
 }
 
-const stopCamera = () => {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop())
-    stream = null
+const stopCamera = async () => {
+  try {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      stream = null
+    }
+    if (videoElement.value) {
+      videoElement.value.srcObject = null
+    }
+    isStreaming.value = false
+    capturedImage.value = null
+    stopFpsCounter()
+    currentResolution.value = ''
+  } catch (error) {
+    handleError(error, stopCamera)
   }
-  if (videoElement.value) {
-    videoElement.value.srcObject = null
-  }
-  isStreaming.value = false
-  capturedImage.value = null
-  stopFpsCounter()
 }
 
+// Image capture
 const captureImage = () => {
-  if (!videoElement.value) return
+  try {
+    if (!videoElement.value || !isStreaming.value) return
 
-  const canvas = document.createElement('canvas')
-  canvas.width = videoElement.value.videoWidth
-  canvas.height = videoElement.value.videoHeight
-  
-  const context = canvas.getContext('2d')
-  context.drawImage(videoElement.value, 0, 0, canvas.width, canvas.height)
-  
-  capturedImage.value = canvas.toDataURL('image/png')
+    // Create canvas if not exists
+    if (!canvas.value) {
+      canvas.value = document.createElement('canvas')
+    }
+
+    // Update canvas dimensions
+    canvas.value.width = videoElement.value.videoWidth
+    canvas.value.height = videoElement.value.videoHeight
+    
+    const context = canvas.value.getContext('2d')
+    context.drawImage(videoElement.value, 0, 0, canvas.value.width, canvas.value.height)
+    
+    capturedImage.value = canvas.value.toDataURL('image/png')
+  } catch (error) {
+    handleError(error, captureImage)
+  }
 }
 
+// Camera switching
 const switchCamera = () => {
-  if (!hasMultipleCameras.value) return
+  try {
+    if (!hasMultipleCameras.value) return
 
-  const currentIndex = cameras.value.findIndex(cam => cam.deviceId === selectedCamera.value)
-  const nextIndex = (currentIndex + 1) % cameras.value.length
-  selectedCamera.value = cameras.value[nextIndex].deviceId
+    const currentIndex = cameras.value.findIndex(cam => cam.deviceId === selectedCamera.value)
+    const nextIndex = (currentIndex + 1) % cameras.value.length
+    selectedCamera.value = cameras.value[nextIndex].deviceId
 
-  // Restart camera with new selection
-  startCamera()
+    startCamera()
+  } catch (error) {
+    handleError(error, switchCamera)
+  }
 }
 
+// Image saving
 const saveImage = () => {
-  if (!capturedImage.value) return
+  try {
+    if (!capturedImage.value) return
 
-  const link = document.createElement('a')
-  link.href = capturedImage.value
-  link.download = `camera-capture-${new Date().toISOString()}.png`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+    const link = document.createElement('a')
+    link.href = capturedImage.value
+    link.download = `camera-capture-${new Date().toISOString()}.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    handleError(error, saveImage)
+  }
 }
 
 const clearCapturedImage = () => {
   capturedImage.value = null
 }
 
-const startFpsCounter = () => {
-  let frameCount = 0
-  let lastTime = performance.now()
+// Lifecycle hooks
+onMounted(() => {
+  // Initialize canvas
+  canvas.value = document.createElement('canvas')
   
-  fpsInterval = setInterval(() => {
-    const currentTime = performance.now()
-    const elapsed = currentTime - lastTime
-    
-    if (elapsed >= 1000) {
-      currentFps.value = Math.round((frameCount * 1000) / elapsed)
-      frameCount = 0
-      lastTime = currentTime
-    }
-    
-    frameCount++
-  }, 100)
-}
-
-const stopFpsCounter = () => {
-  if (fpsInterval) {
-    clearInterval(fpsInterval)
-    fpsInterval = null
-  }
-  currentFps.value = 0
-}
-
-const updateResolution = () => {
-  if (videoElement.value) {
-    currentResolution.value = `${videoElement.value.videoWidth}x${videoElement.value.videoHeight}`
-  }
-}
-
-// Thêm hàm để kiểm tra quyền truy cập camera
-const checkCameraPermission = async () => {
+  // Check browser compatibility on mount
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices()
-    const hasPermission = devices.some(device => device.kind === 'videoinput' && device.label)
-    return hasPermission
+    checkBrowserCompatibility()
   } catch (error) {
-    console.error('Lỗi khi kiểm tra quyền camera:', error)
-    return false
-  }
-}
-
-// Tự động lấy danh sách camera khi component được tạo
-onMounted(async () => {
-  const hasPermission = await checkCameraPermission()
-  if (hasPermission) {
-    getCameraList()
+    handleError(error)
   }
 })
 
 onUnmounted(() => {
+  // Cleanup
   stopCamera()
+  if (canvas.value) {
+    canvas.value = null
+  }
+  if (fpsInterval) {
+    clearInterval(fpsInterval)
+  }
 })
 </script>
 
 <style scoped>
 .camera-container {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 2rem;
+  background: var(--bg-secondary);
+  min-height: calc(100vh - var(--nav-height) - var(--footer-height));
 }
 
-.camera-header {
-  background: #ffffff;
+.camera-section {
+  background: var(--bg-primary);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow-color);
 }
 
-.header-content {
+.section-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
 }
 
-.header-left {
+.section-left {
   flex: 0 0 auto;
 }
 
-.header-right {
+.section-right {
   flex: 1;
   max-width: 800px;
 }
 
-.camera-title {
+.section-title {
   font-size: 2rem;
-  color: #333333;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
-.camera-subtitle {
-  color: #666666;
+.section-subtitle {
+  color: var(--text-secondary);
   font-size: 1rem;
 }
 
@@ -357,85 +438,70 @@ onUnmounted(() => {
 .camera-select-wrapper {
   flex: 0 0 auto;
   min-width: 200px;
-  max-width: 300px;
-  position: relative;
 }
 
 .camera-select {
   width: 100%;
-  padding: 0.625rem 1rem;
-  border: 1px solid #e0e0e0;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--border-color);
   border-radius: 6px;
-  background: #ffffff;
-  color: #333333;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-size: 0.875rem;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .camera-select:hover:not(:disabled) {
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+  border-color: var(--primary-color);
 }
 
-.camera-select:focus {
-  outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+.camera-select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .camera-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.25rem;
-  background: #4CAF50;
-  color: white;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
+  background: var(--primary-color);
+  color: white;
   font-size: 0.875rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 100px;
-  height: 38px;
+  transition: all 0.3s ease;
 }
 
 .camera-button:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--primary-dark);
+  transform: translateY(-2px);
 }
 
 .camera-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  background: #f5f5f5;
-  color: #666666;
 }
 
 .camera-preview-container {
-  background: #ffffff;
+  background: var(--bg-primary);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .camera-preview-wrapper {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-  background: #f5f5f5;
+  max-width: 900px;
+  margin: 0 auto;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: 8px;
   overflow: hidden;
 }
 
 .camera-preview {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -451,114 +517,13 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666666;
-}
-
-.camera-actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.action-button {
-  min-width: 100px;
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  background: #f5f5f5;
-  color: #666666;
-  transform: none;
-  box-shadow: none;
-}
-
-.action-button.primary {
-  background: #4CAF50;
-}
-
-.action-button.primary:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.danger {
-  background: #f44336;
-}
-
-.action-button.danger:hover:not(:disabled) {
-  background: #d32f2f;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.success {
-  background: #2196F3;
-}
-
-.action-button.success:hover:not(:disabled) {
-  background: #1976D2;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.info {
-  background: #00BCD4;
-}
-
-.action-button.info:hover:not(:disabled) {
-  background: #0097A7;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.captured-image-container {
-  margin-top: 2rem;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.captured-image-container h3 {
-  color: #333333;
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
-}
-
-.captured-image {
-  display: flex;
-  justify-content: center;
-}
-
-.captured-image img {
-  max-width: 100%;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
 }
 
 .camera-overlay {
@@ -583,6 +548,83 @@ onUnmounted(() => {
   gap: 1rem;
 }
 
+.camera-actions {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.action-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-button.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.action-button.primary:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.action-button.danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.action-button.danger:hover:not(:disabled) {
+  background-color: var(--danger-dark);
+}
+
+.action-button.success {
+  background-color: #ff9800;
+  color: white;
+}
+
+.action-button.success:hover:not(:disabled) {
+  background-color: #f57c00;
+}
+
+.action-button.info {
+  background-color: var(--info-color);
+  color: white;
+}
+
+.action-button.info:hover:not(:disabled) {
+  background-color: var(--info-dark);
+}
+
+.captured-image-container {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
 .captured-image-header {
   display: flex;
   justify-content: space-between;
@@ -590,26 +632,74 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
+.captured-image-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
 .captured-image-actions {
   display: flex;
   gap: 0.75rem;
 }
 
-.captured-image-actions .action-button {
-  min-width: 90px;
+.captured-image {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.captured-image img {
+  width: 100%;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+}
+
+.error-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.error-content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.error-content h3 {
+  color: var(--danger-color);
+  margin: 0 0 1rem 0;
+}
+
+.error-content p {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {
-  .camera-container {
-    padding: 1rem;
-  }
-
-  .header-content {
+  .section-content {
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  .header-right {
+  .section-right {
     width: 100%;
   }
 
@@ -620,7 +710,6 @@ onUnmounted(() => {
 
   .camera-select-wrapper {
     width: 100%;
-    max-width: none;
   }
 
   .camera-button {
@@ -628,18 +717,11 @@ onUnmounted(() => {
   }
 
   .action-buttons {
-    width: 100%;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
 
   .action-button {
-    flex: 1;
-    min-width: calc(50% - 0.375rem);
-  }
-
-  .captured-image-container {
-    margin-top: 1.5rem;
-    padding: 1rem;
+    width: 100%;
   }
 
   .captured-image-header {
@@ -649,10 +731,12 @@ onUnmounted(() => {
 
   .captured-image-actions {
     width: 100%;
+    flex-direction: column;
   }
 
-  .captured-image-actions .action-button {
-    flex: 1;
+  .error-content {
+    width: 95%;
+    margin: 1rem;
   }
 }
 </style>

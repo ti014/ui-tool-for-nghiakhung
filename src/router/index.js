@@ -68,31 +68,31 @@ const router = createRouter({
         ),
       children: [
         {
-          path: "chon-xac-thuc",
+          path: "select-auth",
           name: "SelectAuthMethodView",
           component: () => import("@/views/features/SelectAuthMethodView.vue"),
         },
         {
-          path: "huong-dan",
+          path: "guide",
           name: "GuideView",
           component: () => import("@/views/features/GuideView.vue"),
         },
+        {
+          path: "read-cccd",
+          name: "ReadCccdFlowView",
+          component: () => import("@/views/features/ReadCccdFlowView.vue"),
+        },
+        {
+          path: "read-passport",
+          name: "ReadPassportFlowView",
+          component: () => import("@/views/features/ReadPassportFlowView.vue"),
+        },
+        {
+          path: "qr",
+          name: "ReadQrFlowView",
+          component: ReadQrFlowView,
+        },
       ],
-    },
-    {
-      path: "/read-cccd",
-      name: "ReadCccdFlowView",
-      component: () => import("@/views/features/ReadCccdFlowView.vue"),
-    },
-    {
-      path: "/read-passport",
-      name: "ReadPassportFlowView",
-      component: () => import("@/views/features/ReadPassportFlowView.vue"),
-    },
-    {
-      path: "/qr",
-      name: "ReadQrFlowView",
-      component: ReadQrFlowView,
     },
     // Catch all 404
     {

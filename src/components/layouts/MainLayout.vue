@@ -77,6 +77,7 @@ export default {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .header {
@@ -220,17 +221,18 @@ export default {
 }
 
 .main-content {
-  flex: 1;
-  margin-top: 64px; /* Header height */
-  padding: 2rem;
-  background-color: var(--bg-secondary);
+  position: relative;
+  flex: 1 0 auto;
+  padding: auto;
+  background-color: var(--bg-primary);
+  margin-top: 64px;
 }
 
 .main-footer {
-  background: var(--bg-primary);
+  flex-shrink: 0;
+  background-color: var(--bg-primary);
+  padding: 1rem 0;
   border-top: 1px solid var(--border-color);
-  padding: 0;
-  height: var(--footer-height);
 }
 
 .footer-content {

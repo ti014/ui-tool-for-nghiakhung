@@ -1,5 +1,5 @@
 <template>
-  <div class="cccd-flow-bg">
+  <div class="passport-flow-bg">
     <!-- Error Alert -->
     <div v-if="error" class="error-alert">
       <div class="error-content">
@@ -19,15 +19,15 @@
     </div>
 
     <transition name="fade-slide" mode="out-in">
-      <div class="cccd-flow-container" :key="step">
+      <div class="passport-flow-container" :key="step">
         <!-- Bước 1: Hướng dẫn đưa hộ chiếu -->
-        <div v-if="step === 1" class="cccd-step step-guide">
-          <img :src="fisLogo" alt="FIS Logo" class="fis-logo-guide" @click="goToGuestMode" />
-          <h2 class="cccd-title gradient-title">Vui lòng đưa hộ chiếu vào thiết bị theo đúng hướng dẫn</h2>
+        <div v-if="step === 1" class="passport-step step-guide">
+          <img :src="fisLogo" alt="FIS Logo" class="fis-logo-guide" @click="goToSelectAuth" />
+          <h2 class="passport-title gradient-title">Vui lòng đưa hộ chiếu vào thiết bị theo đúng hướng dẫn</h2>
           <div class="gif-guide-wrapper">
             <img :src="gifKiosk" alt="Hướng dẫn đặt hộ chiếu" class="cccd-guide-gif" />
           </div>
-          <button class="cccd-btn primary" @click="startReading" :disabled="isLoading">
+          <button class="passport-btn primary" @click="startReading" :disabled="isLoading">
             <span v-if="isLoading" class="loading-spinner"></span>
             <span v-else class="btn-icon">
               <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -41,18 +41,18 @@
         </div>
 
         <!-- Bước 2: Đang đọc hộ chiếu -->
-        <div v-else-if="step === 2" class="cccd-step step-processing">
-          <div class="cccd-progress-icon">
+        <div v-else-if="step === 2" class="passport-step step-processing">
+          <div class="passport-progress-icon">
             <svg width="64" height="64" viewBox="0 0 50 50">
               <circle cx="25" cy="25" r="20" fill="none" stroke="#43e97b" stroke-width="6" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0">
                 <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
               </circle>
             </svg>
           </div>
-          <div class="cccd-progress-bar modern-bar">
-            <div class="cccd-progress-fill" :style="{width: progress + '%'}"></div>
+          <div class="passport-progress-bar modern-bar">
+            <div class="passport-progress-fill" :style="{width: progress + '%'}"></div>
           </div>
-          <div class="cccd-progress-label pulse">Đang đọc hộ chiếu, vui lòng chờ...</div>
+          <div class="passport-progress-label pulse">Đang đọc hộ chiếu, vui lòng chờ...</div>
           <button v-if="error" class="retry-button" @click="startReading">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 4v6h-6"/>
@@ -64,10 +64,10 @@
         </div>
 
         <!-- Bước 3: Chụp ảnh khuôn mặt -->
-        <div v-else-if="step === 3" class="cccd-step step-camera">
+        <div v-else-if="step === 3" class="passport-step step-camera">
           <div class="camera-center-wrapper">
             <div class="camera-container">
-              <div class="cccd-camera-frame modern-camera-frame">
+              <div class="passport-camera-frame modern-camera-frame">
                 <video ref="videoRef" class="camera-preview" autoplay playsinline></video>
                 <div class="face-guide-frame">
                   <div class="face-guide-border"></div>
@@ -108,7 +108,7 @@
         </div>
 
         <!-- Bước 4: Hiển thị kết quả -->
-        <div v-else-if="step === 4" class="cccd-step">
+        <div v-else-if="step === 4" class="passport-step">
           <div class="result-container">
             <!-- Cột trái: 2 ảnh -->
             <div class="photo-column">
@@ -152,18 +152,18 @@
         </div>
 
         <!-- Bước 5: Đang xử lý ảnh -->
-        <div v-else-if="step === 5" class="cccd-step step-processing">
-          <div class="cccd-progress-icon">
+        <div v-else-if="step === 5" class="passport-step step-processing">
+          <div class="passport-progress-icon">
             <svg width="64" height="64" viewBox="0 0 50 50">
               <circle cx="25" cy="25" r="20" fill="none" stroke="#43e97b" stroke-width="6" stroke-linecap="round" stroke-dasharray="31.4 31.4" stroke-dashoffset="0">
                 <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
               </circle>
             </svg>
           </div>
-          <div class="cccd-progress-bar modern-bar">
-            <div class="cccd-progress-fill" :style="{width: progress + '%'}"></div>
+          <div class="passport-progress-bar modern-bar">
+            <div class="passport-progress-fill" :style="{width: progress + '%'}"></div>
           </div>
-          <div class="cccd-progress-label">
+          <div class="passport-progress-label">
             <span class="processing-message">Đang xác thực thông tin</span>
           </div>
         </div>
@@ -465,7 +465,7 @@ const resetFlow = () => {
   clearTimeout(passportReadTimeout)
   clearTimeout(autoStartTimer)
   if (step.value === 4) {
-    router.replace('/guest-mode')
+    router.replace('/guest-mode/select-auth')
     return
   }
   step.value = 1
@@ -716,10 +716,9 @@ onMounted(() => {
   // Không tự động khởi tạo camera khi component mount
   // Chỉ khởi tạo khi chuyển đến bước camera
 })
-function goToGuestMode() {
-  router.push({ name: 'GuestModeView' })
+function goToSelectAuth() {
+  router.replace('/guest-mode/select-auth')
 }
-
 onUnmounted(() => {
   stopCamera()
   clearInterval(progressInterval)
@@ -762,7 +761,7 @@ const infoGroups = computed(() => [
 
 
 <style scoped>
-.cccd-flow-bg {
+.passport-flow-bg {
   min-height: 100vh;
   width: 100vw;
   background: linear-gradient(135deg, #e0e7ef 0%, #f8fafc 100%), url('https://www.transparenttextures.com/patterns/cubes.png');
@@ -770,6 +769,10 @@ const infoGroups = computed(() => [
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 .camera-center-wrapper {
@@ -777,9 +780,10 @@ const infoGroups = computed(() => [
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  min-height: 80vh;
+  width: 100%;
+  height: 100%;
   gap: 1.5rem;
+  overflow: hidden;
 }
 
 .camera-container {
@@ -791,9 +795,10 @@ const infoGroups = computed(() => [
   background: none;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
-.cccd-camera-frame.modern-camera-frame {
+.passport-camera-frame.modern-camera-frame {
   width: 600px;
   max-width: 98vw;
   aspect-ratio: 4/3;
@@ -816,17 +821,17 @@ const infoGroups = computed(() => [
   max-width: 420px;
   width: 100%;
   gap: 1rem;
-  background: rgba(255,255,255,0.85);
-  border-radius: 18px;
-  box-shadow: 0 2px 16px #1976d222;
-  padding: 1.2rem 0.7rem;
-  margin: 1.2rem 0 0 0;
-  backdrop-filter: blur(6px);
-  font-size: 1.3rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(33, 150, 243, 0.12);
+  padding: 1.2rem;
+  margin: 1rem 0 0 0;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(25, 118, 210, 0.08);
 }
 
 @media (max-width: 600px) {
-  .cccd-camera-frame.modern-camera-frame {
+  .passport-camera-frame.modern-camera-frame {
     width: 98vw;
     border-radius: 10px;
   }
@@ -848,7 +853,7 @@ const infoGroups = computed(() => [
   opacity: 0;
   transform: translateY(-40px) scale(0.98);
 }
-.cccd-flow-container {
+.passport-flow-container {
   min-width: 340px;
   max-width: 98vw;
   background: rgba(255,255,255,0.92);
@@ -861,13 +866,13 @@ const infoGroups = computed(() => [
   justify-content: center;
   gap: 2rem;
   backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 .gradient-title {
   background: linear-gradient(90deg, #1976d2 0%, #43e97b 50%, #ff9800 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
   font-weight: 900;
   letter-spacing: 2px;
   font-size: 2.1rem;
@@ -884,7 +889,7 @@ const infoGroups = computed(() => [
   0% { opacity: 1; }
   100% { opacity: 0.6; }
 }
-.cccd-step {
+.passport-step {
   background: rgba(255,255,255,0.98);
   border-radius: 24px;
   box-shadow: 0 8px 32px rgba(33,150,243,0.10);
@@ -896,8 +901,9 @@ const infoGroups = computed(() => [
   align-items: center;
   justify-content: center;
   gap: 2rem;
+  overflow: hidden;
 }
-.cccd-title {
+.passport-title {
   font-size: 2rem;
   font-weight: 900;
   color: #1976d2;
@@ -912,7 +918,7 @@ const infoGroups = computed(() => [
   margin-right: 0.5em;
   vertical-align: middle;
 }
-.cccd-btn {
+.passport-btn {
   padding: 0.8em 2.2em;
   font-size: 1.1rem;
   font-weight: 700;
@@ -928,35 +934,35 @@ const infoGroups = computed(() => [
   align-items: center;
   gap: 0.5em;
 }
-.cccd-btn.primary {
+.passport-btn.primary {
   background: linear-gradient(90deg, #1976d2 0%, #43e97b 100%);
   color: #fff;
   box-shadow: 0 4px 16px #43e97b22;
 }
-.cccd-btn:hover {
+.passport-btn:hover {
   background: #bbdefb;
   color: #1976d2;
   transform: translateY(-2px) scale(1.04);
 }
-.cccd-btn.primary:hover {
+.passport-btn.primary:hover {
   background: linear-gradient(90deg, #43e97b 0%, #1976d2 100%);
   color: #fff;
 }
-.cccd-icon-guide {
+.passport-icon-guide {
   margin-bottom: 1.5rem;
 }
-.cccd-progress-icon {
+.passport-progress-icon {
   position: relative;
   width: 120px;
   height: 120px;
   margin-bottom: 1rem;
 }
-.cccd-progress-icon svg {
+.passport-progress-icon svg {
   width: 100%;
   height: 100%;
   animation: rotate 2s linear infinite;
 }
-.cccd-progress-icon::after {
+.passport-progress-icon::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -968,7 +974,7 @@ const infoGroups = computed(() => [
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
-.cccd-progress-bar.modern-bar {
+.passport-progress-bar.modern-bar {
   width: 400px;
   height: 10px;
   background: #e3f2fd;
@@ -977,7 +983,7 @@ const infoGroups = computed(() => [
   position: relative;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
-.cccd-progress-fill {
+.passport-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #1976d2, #43e97b);
   border-radius: 6px;
@@ -985,7 +991,7 @@ const infoGroups = computed(() => [
   position: relative;
   overflow: hidden;
 }
-.cccd-progress-fill::after {
+.passport-progress-fill::after {
   content: '';
   position: absolute;
   top: 0;
@@ -1000,7 +1006,7 @@ const infoGroups = computed(() => [
   );
   animation: shimmer 1.5s infinite;
 }
-.cccd-progress-label {
+.passport-progress-label {
   font-size: 1.2rem;
   color: #1976d2;
   font-weight: 600;
@@ -1021,13 +1027,13 @@ const infoGroups = computed(() => [
   color: #666;
   font-weight: normal;
 }
-.cccd-progress-label::before {
+.passport-progress-label::before {
   content: 'Vui lòng đợi trong giây lát...';
   font-size: 1.1rem;
   color: #666;
   font-weight: normal;
 }
-.cccd-progress-label::after {
+.passport-progress-label::after {
   content: 'Đang đọc thông tin từ hộ chiếu';
   font-size: 0.95rem;
   color: #888;
@@ -1103,23 +1109,41 @@ const infoGroups = computed(() => [
   border-bottom-right-radius: 8px;
 }
 .camera-instructions {
-  text-align: left;
+  text-align: center;
   color: #1976d2;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  background: rgba(25, 118, 210, 0.06);
+  border-radius: 10px;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.06);
+  border: 1px solid rgba(25, 118, 210, 0.08);
+  word-wrap: break-word;
+  line-height: 1.4;
 }
 .instruction-text.small {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #666;
-  font-weight: normal;
+  font-weight: 500;
+  margin-top: 0.4rem;
+  line-height: 1.3;
+  padding: 0 0.5rem;
 }
 .camera-status {
   color: #1976d2;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-top: 0.5rem;
-  text-align: left;
+  text-align: center;
+  padding: 0.8rem 1.2rem;
+  background: rgba(25, 118, 210, 0.06);
+  border-radius: 10px;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.06);
+  border: 1px solid rgba(25, 118, 210, 0.08);
+  word-wrap: break-word;
+  line-height: 1.3;
 }
 .cccd-result-content {
   display: flex;
@@ -1484,6 +1508,7 @@ const infoGroups = computed(() => [
   .result-final-container {
     max-width: 95vw;
     padding: 1.5rem;
+    max-height: calc(100vh - 150px);
   }
   
   .result-final-row {
@@ -1498,7 +1523,10 @@ const infoGroups = computed(() => [
 }
 @media (max-width: 900px) {
   .result-final-container {
+    flex-direction: column;
     padding: 1rem;
+    gap: 1.5rem;
+    max-height: calc(100vh - 120px);
   }
   
   .result-final-row {
@@ -1532,7 +1560,7 @@ const infoGroups = computed(() => [
 @media (max-width: 600px) {
   .result-final-container {
     padding: 0.8rem;
-    border-radius: 16px;
+    max-height: calc(100vh - 100px);
   }
   
   .result-final-row {
@@ -1796,6 +1824,7 @@ const infoGroups = computed(() => [
   display: flex;
   gap: 3rem;
   align-items: flex-start;
+  height: calc(100vh - 200px);
 }
 
 .photo-column {
@@ -1803,8 +1832,10 @@ const infoGroups = computed(() => [
   flex-direction: column;
   gap: 2rem;
   min-width: 0;
-  max-width: 420px;
+  max-width: 300px;
   width: 100%;
+  position: sticky;
+  top: 2rem;
 }
 
 .photo-block {
@@ -1815,8 +1846,8 @@ const infoGroups = computed(() => [
 }
 
 .photo-frame {
-  width: 300px;
-  height: 400px;
+  width: 200px;
+  height: 260px;
   background: #f8fafc;
   border-radius: 18px;
   box-shadow: 0 2px 12px #1976d233, 0 0 0 4px #43e97b22;
@@ -1834,7 +1865,7 @@ const infoGroups = computed(() => [
 }
 
 .photo-label {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #1976d2;
   font-weight: 600;
   text-align: center;
@@ -1851,6 +1882,27 @@ const infoGroups = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+  max-height: calc(100vh - 200px);
+}
+
+.info-column::-webkit-scrollbar {
+  width: 8px;
+}
+
+.info-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.info-column::-webkit-scrollbar-thumb {
+  background: #1976d2;
+  border-radius: 4px;
+}
+
+.info-column::-webkit-scrollbar-thumb:hover {
+  background: #1565c0;
 }
 
 .info-grid {
@@ -1864,15 +1916,26 @@ const infoGroups = computed(() => [
   border-radius: 16px;
   box-shadow: 0 2px 12px #1976d21a, 0 1px 4px #43e97b22;
   padding: 1.2rem 1.5rem;
+  border: 1px solid #e3f2fd;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 20px #1976d233, 0 2px 8px #43e97b33;
+  border-color: #1976d2;
+  transform: translateY(-2px);
 }
 
 .info-title {
   font-size: 1.15rem;
   font-weight: 700;
   color: #1976d2;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid #e3f2fd;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e3f2fd;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .info-table {
@@ -1881,7 +1944,7 @@ const infoGroups = computed(() => [
 }
 
 .info-table td {
-  padding: 0.5rem 0.4rem;
+  padding: 0.6rem 0.4rem;
   border-bottom: 1px solid #f0f0f0;
   font-size: 1rem;
   line-height: 1.4;
@@ -1913,6 +1976,7 @@ const infoGroups = computed(() => [
   .result-container {
     max-width: 95vw;
     padding: 1.5rem;
+    gap: 2rem;
   }
   
   .info-grid {
@@ -1925,11 +1989,18 @@ const infoGroups = computed(() => [
     flex-direction: column;
     padding: 1rem;
     gap: 1.5rem;
+    height: auto;
   }
   
-  .photo-column,
-  .info-column {
+  .photo-column {
+    position: relative;
+    top: 0;
     max-width: 100%;
+  }
+
+  .info-column {
+    max-height: none;
+    padding-right: 0;
   }
   
   .info-card {
@@ -1953,6 +2024,7 @@ const infoGroups = computed(() => [
 @media (max-width: 600px) {
   .result-container {
     padding: 0.8rem;
+    gap: 1rem;
   }
   
   .info-card {
@@ -1980,17 +2052,50 @@ const infoGroups = computed(() => [
   gap: 1.5rem;
   padding: 2rem;
 }
-
 .fis-logo-guide {
   width: 120px;
   height: auto;
   margin-bottom: 0.5rem;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.15),
+    0 2px 12px rgba(33, 150, 243, 0.1);
+  position: relative;
+}
+
+.fis-logo-guide::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  pointer-events: none;
 }
 
 .fis-logo-guide:hover {
   transform: scale(1.05);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.25),
+    0 4px 20px rgba(33, 150, 243, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.fis-logo-guide:hover::before {
+  border-color: rgba(33, 150, 243, 0.4);
+}
+
+.fis-logo-guide:active {
+  transform: scale(0.98);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.2),
+    0 2px 8px rgba(33, 150, 243, 0.1);
 }
 
 
@@ -2127,20 +2232,57 @@ const infoGroups = computed(() => [
 .retry-button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: var(--primary-light);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  border-radius: 4px;
+  gap: 0.4rem;
+  padding: 0.7rem 1.5rem;
+  background: linear-gradient(135deg, #1976d2 0%, #43e97b 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 16px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
 .retry-button:hover {
-  background-color: var(--primary-color);
-  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.retry-button svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+@media (max-width: 600px) {
+  .camera-side-panel {
+    padding: 1rem;
+    margin: 0.8rem 0 0 0;
+    border-radius: 12px;
+    max-width: 360px;
+  }
+
+  .camera-instructions {
+    font-size: 0.95rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .instruction-text.small {
+    font-size: 0.85rem;
+    padding: 0 0.3rem;
+  }
+
+  .camera-status {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .retry-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
 }
 
 /* Disabled Button State */

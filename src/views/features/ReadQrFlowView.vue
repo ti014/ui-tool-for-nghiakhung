@@ -1,7 +1,7 @@
 <template>
   <div class="qr-flow-container">
     <div class="qr-header">
-      <img src="@/assets/icons/fis-logo.svg" alt="FPT IS" class="qr-logo" @click="goToGuestMode" />
+      <img src="@/assets/icons/fis-logo.svg" alt="FPT IS" class="qr-logo" @click="goToSelectAuth" />
       <h1 class="qr-title">Quét mã QR/QBar</h1>
       <p class="qr-subtitle">Đặt mã QR hoặc QBar vào khung quét để xác thực</p>
       <div class="scan-note">
@@ -33,7 +33,7 @@
     </div>
 
     <div class="qr-footer">
-      <button class="back-button" @click="goToGuestMode">
+      <button class="back-button" @click="goToSelectAuth">
         <span class="button-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -63,7 +63,7 @@
             <span class="info-value">{{ qrContent }}</span>
           </div>
         </div>
-        <button class="back-button" @click="goToGuestMode" style="margin-top: 1.5rem; width: 100%;">
+        <button class="back-button" @click="goToSelectAuth" style="margin-top: 1.5rem; width: 100%;">
           <span class="button-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -87,10 +87,9 @@ const detectedType = ref('qr')
 const qrContent = ref('https://example.com/qr-data')
 const scanTime = ref('')
 
-function goToGuestMode() {
-  router.push({ name: 'SelectAuthMethodView' })
+function goToSelectAuth() {
+  router.replace('/guest-mode/select-auth')
 }
-
 onMounted(() => {
   const timer = setInterval(() => {
     if (countdown.value > 0) {

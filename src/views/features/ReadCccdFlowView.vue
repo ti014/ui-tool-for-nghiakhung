@@ -4,13 +4,20 @@
       <div class="cccd-flow-container" :key="step">
         <!-- Bước 1: Hướng dẫn đưa thẻ -->
         <div v-if="step === 1" class="cccd-step step-guide">
-          <img :src="fisLogo" alt="FIS Logo" class="fis-logo-guide" @click="goToGuestMode" />
+          <img :src="fisLogo" alt="FIS Logo" class="fis-logo-guide" @click="goToSelectAuth" />
           <h2 class="cccd-title gradient-title">Vui lòng đưa thẻ căn cước công dân vào thiết bị theo đúng hướng dẫn</h2>
           <div class="gif-guide-wrapper">
             <img :src="gifKiosk" alt="Hướng dẫn đặt thẻ CCCD" class="cccd-guide-gif" />
           </div>
           <button class="cccd-btn primary" @click="startReading">
-            <span class="btn-icon"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M5 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/></svg></span> Bắt đầu đọc thẻ
+            <span class="btn-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="7" width="18" height="13" rx="2"/>
+                <circle cx="12" cy="13.5" r="3.5"/>
+                <path d="M5 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </span>
+            Bắt đầu đọc thẻ
           </button>
         </div>
 
@@ -547,7 +554,7 @@ function printSelectedInfo() {
 
 function resetFlow() {
   if (step.value === 4) {
-    router.replace('/guest-mode')
+    router.replace('/guest-mode/select-auth')
     return
   }
   step.value = 1
@@ -598,7 +605,6 @@ const infoGroups = computed(() => [
     title: 'Thông tin bổ sung',
     items: [
       { label: 'Đặc điểm nhận dạng', value: cccdData.value.identifyingMarks || '---' },
-      { label: 'Nhóm máu', value: cccdData.value.bloodType || '---' },
       { label: 'Mã số BHXH', value: cccdData.value.socialInsuranceNumber || '---' },
       { label: 'Mã số BHYT', value: cccdData.value.healthInsuranceNumber || '---' },
     ]
@@ -606,8 +612,6 @@ const infoGroups = computed(() => [
   {
     title: 'Thông tin giấy tờ',
     items: [
-      { label: 'Loại giấy tờ', value: cccdData.value.documentType || '---' },
-      { label: 'Số giấy tờ', value: cccdData.value.id || '---' },
       { label: 'Ngày cấp', value: cccdData.value.issueDate || '---' },
       { label: 'Nơi cấp', value: cccdData.value.issuePlace || '---' },
       { label: 'Ngày hết hạn', value: cccdData.value.expiryDate || '---' },
@@ -616,8 +620,8 @@ const infoGroups = computed(() => [
   },
 ])
 
-function goToGuestMode() {
-  router.push({ name: 'GuestModeView' })
+function goToSelectAuth() {
+  router.replace('/guest-mode/select-auth')
 }
 
 onUnmounted(() => {
@@ -645,6 +649,38 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-x: hidden;
+}
+
+.cccd-flow-container {
+  min-width: 340px;
+  max-width: 98vw;
+  background: rgba(255,255,255,0.92);
+  border-radius: 32px;
+  box-shadow: 0 12px 48px rgba(33,150,243,0.13), 0 2px 12px rgba(255,152,0,0.09);
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  backdrop-filter: blur(8px);
+  overflow-x: hidden;
+}
+
+.cccd-step {
+  background: rgba(255,255,255,0.98);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(33,150,243,0.10);
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  min-width: 340px;
+  max-width: 98vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  overflow-x: hidden;
 }
 
 .camera-center-wrapper {
@@ -652,9 +688,10 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  min-height: 80vh;
+  width: 100%;
+  height: 100%;
   gap: 1.5rem;
+  overflow: hidden;
 }
 
 .camera-container {
@@ -666,6 +703,7 @@ onUnmounted(() => {
   background: none;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 .cccd-camera-frame.modern-camera-frame {
@@ -691,24 +729,73 @@ onUnmounted(() => {
   max-width: 420px;
   width: 100%;
   gap: 1rem;
-  background: rgba(255,255,255,0.85);
-  border-radius: 18px;
-  box-shadow: 0 2px 16px #1976d222;
-  padding: 1.2rem 0.7rem;
-  margin: 1.2rem 0 0 0;
-  backdrop-filter: blur(6px);
-  font-size: 1.3rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(33, 150, 243, 0.12);
+  padding: 1.2rem;
+  margin: 1rem 0 0 0;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(25, 118, 210, 0.08);
+}
+.camera-instructions {
+  text-align: center;
+  color: #1976d2;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  padding: 0.8rem 1.2rem;
+  background: rgba(25, 118, 210, 0.06);
+  border-radius: 10px;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.06);
+  border: 1px solid rgba(25, 118, 210, 0.08);
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+.instruction-text.small {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  margin-top: 0.4rem;
+  line-height: 1.3;
+  padding: 0 0.5rem;
+}
+.camera-status {
+  color: #1976d2;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.8rem 1.2rem;
+  background: rgba(25, 118, 210, 0.06);
+  border-radius: 10px;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.06);
+  border: 1px solid rgba(25, 118, 210, 0.08);
+  word-wrap: break-word;
+  line-height: 1.3;
 }
 
 @media (max-width: 600px) {
-  .cccd-camera-frame.modern-camera-frame {
-    width: 98vw;
-    border-radius: 10px;
-  }
   .camera-side-panel {
-    border-radius: 10px;
-    padding: 0.7rem 0.3rem;
-    margin: 0.7rem 0 0 0;
+    padding: 1rem;
+    margin: 0.8rem 0 0 0;
+    border-radius: 12px;
+    max-width: 360px;
+  }
+
+  .camera-instructions {
+    font-size: 0.95rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .instruction-text.small {
+    font-size: 0.85rem;
+    padding: 0 0.3rem;
+  }
+
+  .camera-status {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
   }
 }
 
@@ -736,13 +823,14 @@ onUnmounted(() => {
   justify-content: center;
   gap: 2rem;
   backdrop-filter: blur(8px);
+  max-height: 100vh;
+  overflow-y: auto;
 }
 .gradient-title {
   background: linear-gradient(90deg, #1976d2 0%, #43e97b 50%, #ff9800 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
   font-weight: 900;
   letter-spacing: 2px;
   font-size: 2.1rem;
@@ -772,6 +860,13 @@ onUnmounted(() => {
   justify-content: center;
   gap: 2rem;
 }
+
+/* Chỉ áp dụng cho step 4 */
+.cccd-step:has(.result-container) {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .cccd-title {
   font-size: 2rem;
   font-weight: 900;
@@ -976,25 +1071,6 @@ onUnmounted(() => {
   border-bottom-width: 2.5px;
   border-right-width: 2.5px;
   border-bottom-right-radius: 8px;
-}
-.camera-instructions {
-  text-align: left;
-  color: #1976d2;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-.instruction-text.small {
-  font-size: 0.95rem;
-  color: #666;
-  font-weight: normal;
-}
-.camera-status {
-  color: #1976d2;
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-  text-align: left;
 }
 .cccd-result-content {
   display: flex;
@@ -1317,21 +1393,31 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  border: 1px solid #e3f2fd;
+  transition: all 0.3s ease;
+}
+.result-final-info-card:hover {
+  box-shadow: 0 4px 20px #1976d233, 0 2px 8px #43e97b33;
+  border-color: #1976d2;
+  transform: translateY(-2px);
 }
 .result-final-info-title {
   font-size: 1.15rem;
   font-weight: 700;
   color: #1976d2;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid #e3f2fd;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e3f2fd;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .result-final-info-table {
   width: 100%;
   border-collapse: collapse;
 }
 .result-final-info-table td {
-  padding: 0.5rem 0.4rem;
+  padding: 0.6rem 0.4rem;
   border-bottom: 1px solid #f0f0f0;
   font-size: 1rem;
   line-height: 1.4;
@@ -1359,6 +1445,7 @@ onUnmounted(() => {
   .result-final-container {
     max-width: 95vw;
     padding: 1.5rem;
+    gap: 2rem;
   }
   
   .result-final-row {
@@ -1371,43 +1458,13 @@ onUnmounted(() => {
 }
 @media (max-width: 900px) {
   .result-final-container {
+    flex-direction: column;
     padding: 1rem;
+    gap: 1.5rem;
   }
   
   .result-final-row {
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 0;
-  }
-  
-  .result-final-photo-col,
-  .result-final-info-col {
-    max-width: 100%;
-  }
-  
-  .result-final-info-card {
-    padding: 1rem;
-  }
-  
-  .result-final-info-title {
-    font-size: 1.1rem;
-  }
-  
-  .result-final-info-table td {
-    font-size: 0.95rem;
-    padding: 0.4rem 0.3rem;
-  }
-  
-  .field-name {
-    width: 150px;
-  }
-}
-@media (max-width: 600px) {
-  .result-final-container {
-    padding: 0.8rem;
-  }
-  
-  .result-final-row {
     gap: 1rem;
   }
   
@@ -1670,6 +1727,7 @@ onUnmounted(() => {
   display: flex;
   gap: 3rem;
   align-items: flex-start;
+  height: calc(100vh - 200px);
 }
 
 .photo-column {
@@ -1677,8 +1735,10 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 2rem;
   min-width: 0;
-  max-width: 420px;
+  max-width: 300px;
   width: 100%;
+  position: sticky;
+  top: 2rem;
 }
 
 .photo-block {
@@ -1689,8 +1749,8 @@ onUnmounted(() => {
 }
 
 .photo-frame {
-  width: 300px;
-  height: 400px;
+  width: 200px;
+  height: 260px;
   background: #f8fafc;
   border-radius: 18px;
   box-shadow: 0 2px 12px #1976d233, 0 0 0 4px #43e97b22;
@@ -1708,7 +1768,7 @@ onUnmounted(() => {
 }
 
 .photo-label {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #1976d2;
   font-weight: 600;
   text-align: center;
@@ -1725,6 +1785,27 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+  max-height: calc(100vh - 200px);
+}
+
+.info-column::-webkit-scrollbar {
+  width: 8px;
+}
+
+.info-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.info-column::-webkit-scrollbar-thumb {
+  background: #1976d2;
+  border-radius: 4px;
+}
+
+.info-column::-webkit-scrollbar-thumb:hover {
+  background: #1565c0;
 }
 
 .info-grid {
@@ -1738,15 +1819,26 @@ onUnmounted(() => {
   border-radius: 16px;
   box-shadow: 0 2px 12px #1976d21a, 0 1px 4px #43e97b22;
   padding: 1.2rem 1.5rem;
+  border: 1px solid #e3f2fd;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 20px #1976d233, 0 2px 8px #43e97b33;
+  border-color: #1976d2;
+  transform: translateY(-2px);
 }
 
 .info-title {
   font-size: 1.15rem;
   font-weight: 700;
   color: #1976d2;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid #e3f2fd;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e3f2fd;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .info-table {
@@ -1755,7 +1847,7 @@ onUnmounted(() => {
 }
 
 .info-table td {
-  padding: 0.5rem 0.4rem;
+  padding: 0.6rem 0.4rem;
   border-bottom: 1px solid #f0f0f0;
   font-size: 1rem;
   line-height: 1.4;
@@ -1787,6 +1879,7 @@ onUnmounted(() => {
   .result-container {
     max-width: 95vw;
     padding: 1.5rem;
+    gap: 2rem;
   }
   
   .info-grid {
@@ -1799,11 +1892,18 @@ onUnmounted(() => {
     flex-direction: column;
     padding: 1rem;
     gap: 1.5rem;
+    height: auto;
   }
   
-  .photo-column,
-  .info-column {
+  .photo-column {
+    position: relative;
+    top: 0;
     max-width: 100%;
+  }
+
+  .info-column {
+    max-height: none;
+    padding-right: 0;
   }
   
   .info-card {
@@ -1827,6 +1927,7 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .result-container {
     padding: 0.8rem;
+    gap: 1rem;
   }
   
   .info-card {
@@ -1860,11 +1961,45 @@ onUnmounted(() => {
   height: auto;
   margin-bottom: 0.5rem;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.15),
+    0 2px 12px rgba(33, 150, 243, 0.1);
+  position: relative;
+}
+
+.fis-logo-guide::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  pointer-events: none;
 }
 
 .fis-logo-guide:hover {
   transform: scale(1.05);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.25),
+    0 4px 20px rgba(33, 150, 243, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.fis-logo-guide:hover::before {
+  border-color: rgba(33, 150, 243, 0.4);
+}
+
+.fis-logo-guide:active {
+  transform: scale(0.98);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.2),
+    0 2px 8px rgba(33, 150, 243, 0.1);
 }
 
 .cccd-title.gradient-title {
@@ -1934,5 +2069,54 @@ onUnmounted(() => {
   .cccd-title.gradient-title {
     font-size: 1.3rem;
   }
+}
+
+.auth-logo {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 120px;
+  height: auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.15),
+    0 2px 12px rgba(33, 150, 243, 0.1);
+  position: relative;
+}
+
+.auth-logo::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  pointer-events: none;
+}
+
+.auth-logo:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.25),
+    0 4px 20px rgba(33, 150, 243, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.auth-logo:hover::before {
+  border-color: rgba(33, 150, 243, 0.4);
+}
+
+.auth-logo:active {
+  transform: scale(0.98);
+  box-shadow: 
+    inset 0 0 0 1px rgba(33, 150, 243, 0.2),
+    0 2px 8px rgba(33, 150, 243, 0.1);
 }
 </style> 

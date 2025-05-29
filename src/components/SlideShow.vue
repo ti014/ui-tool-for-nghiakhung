@@ -49,39 +49,33 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+const commonFeatures = [
+  'Đọc và xác thực CCCD gắn chip',
+  'Xác thực hộ chiếu điện tử',
+  'Tích hợp công nghệ AI tiên tiến',
+  'Bảo mật thông tin tuyệt đối',
+  'Hỗ trợ đa dạng loại giấy tờ',
+  'Tích hợp với hệ thống quốc gia',
+]
+
 const slides = [
   {
     image: new URL('@/assets/slides/1.webp', import.meta.url).href,
     title: 'Kiosk Thông Minh FPT IS',
     description: 'Giải pháp xác thực và xử lý thông tin tự động',
-    features: [
-      'Đọc và xác thực CCCD gắn chip',
-      'Xác thực hộ chiếu điện tử',
-      'Tích hợp công nghệ AI tiên tiến',
-      'Bảo mật thông tin tuyệt đối'
-    ]
+    features: commonFeatures
   },
   {
     image: new URL('@/assets/slides/2.jpg', import.meta.url).href,
     title: 'Xác Thực Nhanh Chóng',
     description: 'Quy trình xác thực đơn giản, chính xác và an toàn',
-    features: [
-      'Xác thực danh tính trong 3 giây',
-      'Hỗ trợ đa dạng loại giấy tờ',
-      'Tích hợp với hệ thống quốc gia',
-      'Báo cáo thống kê tự động'
-    ]
+    features: commonFeatures
   },
   {
     image: new URL('@/assets/slides/3.jpg', import.meta.url).href,
     title: 'Giải Pháp Toàn Diện',
     description: 'Tích hợp đa dạng tính năng phục vụ doanh nghiệp',
-    features: [
-      'Quản lý thông tin tập trung',
-      'Tích hợp API dễ dàng',
-      'Hỗ trợ 24/7',
-      'Cập nhật thường xuyên'
-    ]
+    features: commonFeatures
   }
 ]
 
@@ -215,8 +209,8 @@ onUnmounted(() => {
 
 .slide-features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
   margin-top: 3rem;
   max-width: 1200px;
   margin-left: auto;

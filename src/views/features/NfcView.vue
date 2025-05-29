@@ -692,7 +692,7 @@ export default {
 
 <style scoped>
 .nfc-container {
-  padding: 2rem;
+  padding: 2.5rem;
   background: var(--bg-secondary);
   min-height: calc(100vh - var(--nav-height) - var(--footer-height));
 }
@@ -996,7 +996,6 @@ export default {
   font-weight: 600;
   color: var(--primary-color);
   background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

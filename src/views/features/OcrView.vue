@@ -742,7 +742,6 @@ export default {
   font-weight: 600;
   color: var(--primary-color);
   background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   pointer-events: none;
 }
