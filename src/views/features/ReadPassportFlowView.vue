@@ -1050,8 +1050,8 @@ const infoGroups = computed(() => [
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
+  width: 60%;
+  height: 80%;
   pointer-events: none;
 }
 .face-guide-border {
@@ -1060,11 +1060,25 @@ const infoGroups = computed(() => [
   left: 0;
   right: 0;
   bottom: 0;
-  border: 2.5px solid #43e97b;
+  border: 3px solid #43e97b;
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
   box-shadow: 0 0 32px 8px #43e97b44, 0 0 0 9999px rgba(0,0,0,0.45);
   transition: box-shadow 0.3s;
+  animation: pulseBorder 2s infinite;
 }
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 0 32px 8px #43e97b44, 0 0 0 9999px rgba(0,0,0,0.45);
+  }
+  50% {
+    box-shadow: 0 0 40px 12px #43e97b66, 0 0 0 9999px rgba(0,0,0,0.45);
+  }
+  100% {
+    box-shadow: 0 0 32px 8px #43e97b44, 0 0 0 9999px rgba(0,0,0,0.45);
+  }
+}
+
 .face-guide-corners {
   position: absolute;
   top: 0;
@@ -1072,42 +1086,49 @@ const infoGroups = computed(() => [
   right: 0;
   bottom: 0;
 }
+
 .corner {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   border-color: #43e97b;
   border-style: solid;
   border-width: 0;
+  opacity: 0.8;
 }
+
 .top-left {
-  top: -2px;
-  left: -2px;
-  border-top-width: 2.5px;
-  border-left-width: 2.5px;
-  border-top-left-radius: 8px;
+  top: -3px;
+  left: -3px;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-top-left-radius: 12px;
 }
+
 .top-right {
-  top: -2px;
-  right: -2px;
-  border-top-width: 2.5px;
-  border-right-width: 2.5px;
-  border-top-right-radius: 8px;
+  top: -3px;
+  right: -3px;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-top-right-radius: 12px;
 }
+
 .bottom-left {
-  bottom: -2px;
-  left: -2px;
-  border-bottom-width: 2.5px;
-  border-left-width: 2.5px;
-  border-bottom-left-radius: 8px;
+  bottom: -3px;
+  left: -3px;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-bottom-left-radius: 12px;
 }
+
 .bottom-right {
-  bottom: -2px;
-  right: -2px;
-  border-bottom-width: 2.5px;
-  border-right-width: 2.5px;
-  border-bottom-right-radius: 8px;
+  bottom: -3px;
+  right: -3px;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-bottom-right-radius: 12px;
 }
+
 .camera-instructions {
   text-align: center;
   color: #1976d2;
